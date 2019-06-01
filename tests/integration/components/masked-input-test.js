@@ -1,8 +1,7 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
-import { render, find, focus } from '@ember/test-helpers';
+import { render, find, focus, triggerEvent } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
-import $ from 'jquery';
 
 module('Integration | Component | masked input', function(hooks) {
   setupRenderingTest(hooks);
@@ -19,7 +18,7 @@ module('Integration | Component | masked input', function(hooks) {
     assert.equal(find('input').getAttribute('size'), 5);
   });
 
-  test('it sets a placholder from InputMask', async function(assert) {
+  test('it sets a placeholder from InputMask', async function(assert) {
     await render(hbs`{{masked-input mask='11:11'}}`);
 
     assert.equal(find('input').getAttribute('placeholder'), '__:__');
@@ -30,12 +29,10 @@ module('Integration | Component | masked input', function(hooks) {
 
     await focus('input');
 
-    let e = $.Event('keypress', { which: 49, keyCode: 49, charCode: 49 });
-    this.$('input').trigger(e);
-    e = $.Event('keypress', { which: 120, keyCode: 120, charCode: 120 });
-    this.$('input').trigger(e);
-    e = $.Event('keypress', { which: 50, keyCode: 50, charCode: 50 });
-    this.$('input').trigger(e);
+    // Using triggerKeyEvent does not send the expected event properties
+    await triggerEvent('input', 'keypress', { which: 49, keyCode: 49, charCode: 49 });
+    await triggerEvent('input', 'keypress', { which: 120, keyCode: 120, charCode: 120 });
+    await triggerEvent('input', 'keypress', { which: 50, keyCode: 50, charCode: 50 });
 
     assert.dom('input').hasValue('12:__');
   });
@@ -45,12 +42,14 @@ module('Integration | Component | masked input', function(hooks) {
 
     await focus('input');
 
-    let e = $.Event('keypress', { which: 49, keyCode: 49, charCode: 49 });
-    this.$('input').trigger(e);
-    e = $.Event('keypress', { which: 120, keyCode: 120, charCode: 120 });
-    this.$('input').trigger(e);
-    e = $.Event('keypress', { which: 50, keyCode: 50, charCode: 50 });
-    this.$('input').trigger(e);
+    // Using triggerKeyEvent does not send the expected event properties
+    await triggerEvent('input', 'keypress', { which: 49, keyCode: 49, charCode: 49 });
+    await triggerEvent('input', 'keypress', { which: 50, keyCode: 50, charCode: 50 });
+    await triggerEvent('input', 'keypress', { which: 51, keyCode: 51, charCode: 51 });
+
+    await triggerEvent('input', 'keydown', { which: 8, keyCode: 8, charCode: 8 });
+    await triggerEvent('input', 'keypress', { which: 8, keyCode: 8, charCode: 8 });
+    await triggerEvent('input', 'keyup', { which: 8, keyCode: 8, charCode: 8 });
 
     assert.dom('input').hasValue('12:__');
   });
